@@ -1,7 +1,7 @@
 ﻿// Each #kernel tells which function to compile; you can have many kernels
 #pragma kernel Render
 
-#define length 30
+#define length 60
 
 // Create a RenderTexture with enableRandomWrite flag and set it
 // with cs.SetTexture
@@ -37,19 +37,17 @@ void Render (uint3 id : SV_DispatchThreadID)
     float smallSize = 1;
     float v = 1;
 
-    float main = metaball(p1,  100,                    pixelPossition);
+    float main = metaball(p1, 100, pixelPossition);
 
     float c = main, m = main, y = main;
 
     for(uint i1 = 0; i1 < length; i1+=3)
-        c += metaball(points[i1],  smallSize + 10 / (i1 + 1), pixelPossition);
-
-    for(uint i2 = 1; i2 < length; i2+=3)
-        m += metaball(points[i2],  smallSize + 10 / (i2 + 1), pixelPossition);
-
-    for(uint i3 = 2; i3 < length; i3+=3)
-        y += metaball(points[i3],  smallSize + 10 / (i3 + 1), pixelPossition);
-
+    {
+        uint i2 = i1 + 1, i3 = i2 + 1;
+        c += metaball(points[i1],  smallSize + 20 / (i1 + 1), pixelPossition);
+        m += metaball(points[i2],  smallSize + 20 / (i2 + 1), pixelPossition);
+        y += metaball(points[i3],  smallSize + 20 / (i3 + 1), pixelPossition);
+    }
 
     Result[id.xy] = pow(c, 10) * float4(0,1,1,1) + pow(m, 5) * float4(1,0,1,1) + pow(y, 10) * float4(1,1,0,1) + 0.05;
 }

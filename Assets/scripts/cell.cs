@@ -38,7 +38,7 @@ public class cell : MonoBehaviour
 
 		var useTime = Time.time / 10;
 
-		var points = new Vector4[30];
+		var points = new Vector4[60];
 
 		for (int i = 0; i < points.Length; i++)
 			points[i] =
