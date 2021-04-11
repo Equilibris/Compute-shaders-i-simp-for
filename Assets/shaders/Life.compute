@@ -1,0 +1,43 @@
+﻿#pragma kernel CSMain
+#pragma kernel Init
+
+RWTexture2D<float4> Result;
+Texture2D<float4> Intermediate;
+
+uint width, height, time;
+
+uint hash(uint s) {
+	s ^= 2747636419u;
+	s *= 2654435769u;
+	s ^= s >> 16;
+	s *= 2654435769u;
+	s ^= s >> 16;
+	s *= 2654435769u;
+	return s;
+}
+
+float Random(uint seed) { return float(hash(seed)) / 4294967295.0; /* 2^32-1 */ }
+
+[numthreads(8, 8, 1)]
+void Init(uint3 id : SV_DispatchThreadID)
+{
+	Result[id.xy] = Random(id.x + id.y * width + time * width * height) > 0.995;
+}
+
+[numthreads(8, 8, 1)]
+void CSMain(uint3 id : SV_DispatchThreadID)
+{
+	// float4 old = Result[uint2(id.x, id.y - 1)];
+
+	bool cond = id.y == 0;
+
+	bool left = bool(length(Intermediate[uint2(fmod(id.x - 1 + width, width), id.y + 1)]));
+	bool central = bool(length(Intermediate[uint2(id.x, id.y + 1)]));
+	bool right = bool(length(Intermediate[uint2(fmod(id.x + 1, width), id.y + 1)]));
+
+	// Result[id.xy] = 1;
+	Result[id.xy] = (cond) * (left ^ (central | right)) + (1 - cond)*Intermediate[uint2(id.x, id.y - 1)];
+	// if (cond)
+	// 	Result[id.xy] = left ^ (central | right);
+	// else Result[id.xy] = Intermediate[uint2(id.x, id.y - 1)];
+}

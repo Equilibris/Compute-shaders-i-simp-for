@@ -1,0 +1,135 @@
+﻿#pragma kernel Update
+#pragma kernel Process
+#pragma kernel BuildAgents
+
+// #define PI = 3.14159265359
+float PI = 3.141592;
+
+struct Agent {
+	float2 possition;
+	float angle;
+};
+
+Agent makeAgent(float2 possition, float angle) {
+	Agent agent;
+	agent.possition = possition;
+	agent.angle = angle;
+	return agent;
+}
+
+uint width, height;
+
+uint numAgents;
+float deltaTime;
+float movementSpeed;
+
+RWTexture2D<float4> Result;
+RWBuffer<Agent> agents;
+
+uint hash(uint s) {
+	s ^= 2747636419u;
+	s *= 2654435769u;
+	s ^= s >> 16;
+	s *= 2654435769u;
+	s ^= s >> 16;
+	s *= 2654435769u;
+	return s;
+}
+
+float nrand(uint seed)
+{
+	return hash(seed) / 4294967295.0; // 2^32-1
+}
+
+uint getPixelId(uint2 cord)
+{
+	uint pixelId = cord.x + cord.y * width;
+
+	return pixelId;
+}
+
+float nrand(float2 uv)
+{
+	return frac(sin(dot(uv, float2(12.9898, 78.233))) * 43758.5453);
+}
+
+bool inBounds(float2 cord) {
+	return cord.x >= 0 && uint(cord.x) < width && cord.y >= 0 && uint(cord.y) < height;
+}
+
+float2 createDirectionVector(float angle) {
+	float2 direction = float2(cos(angle), sin(angle)) * movementSpeed * deltaTime;
+
+	return direction;
+}
+
+[numthreads(32, 1, 1)]
+void BuildAgents(uint3 fullId : SV_DispatchThreadID) {
+	uint id = fullId.xxx;
+	if (id >= numAgents) return;
+
+	agents[id] = makeAgent(float2(width * nrand(float2(id, 1)), height * nrand(float2(id, 2))), 2 * PI * nrand(float2(id, 3)));
+}
+
+
+// [numthreads(256, 1, 1)]
+// void Update(uint3 id : SV_DispatchThreadID)
+// {
+// 	if (id.x >= numAgents) return;
+// 	Agent agent = agents[id.x];
+
+// 	Result[agent.possition.xy] = 1;
+// }
+
+[numthreads(256, 1, 1)]
+void Update(uint3 id : SV_DispatchThreadID)
+{
+	uint pixelId = id.x;
+	if (pixelId >= numAgents) { return; }
+
+	Agent agent = agents[pixelId];
+
+	Result[agent.possition.xy] = 1;
+
+
+	float2 direction = createDirectionVector(agent.angle);
+
+	agent.possition += direction;
+
+	float validNewpos = inBounds(agent.possition);
+
+	if(!validNewpos) {
+		float random = nrand(agent.possition.xy);
+
+		float xPos = min(max(0, agent.possition.x), width - 0.01);
+		float yPos = min(max(0, agent.possition.y), height - 0.01);
+
+		agent.possition = float2(xPos,yPos);
+		agent.angle = random * 2 * PI;
+	}
+
+	agents[pixelId] = agent;
+}
+
+[numthreads(8, 8, 1)]
+void Process(uint3 id : SV_DispatchThreadID)
+{
+	float mask = 0.5;
+
+	float4 sum = 0;
+	for (int x = -1; x <= 1; x++)
+		for (int y = -1; y <= 1; y++) {
+			float2 target = float2(id.x + x, id.y + y);
+
+			if (inBounds(target))
+				sum += Result[target];
+		}
+
+	float4 original = Result[id.xy];
+
+	float4 blurResult = sum / 9;
+
+	float4 defuseResult = lerp(original, blurResult, 75 * deltaTime);
+
+	Result[id.xy] = max(0, defuseResult - 0.2 * deltaTime);
+}

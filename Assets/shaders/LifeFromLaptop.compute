@@ -1,0 +1,75 @@
+﻿#pragma kernel Init
+#pragma kernel Render
+#pragma kernel LifeCycle
+
+
+Texture2D<float4> Intermediary;
+RWTexture2D<float4> Life;
+RWTexture2D<float4> Result;
+
+float2 displacement;
+float now;
+
+uint M_WIDTH, M_HEIGHT, // [M]AIN dimentions
+     L_WIDTH, L_HEIGHT;
+
+uint Hash (uint s)
+{
+    s ^= 2747636419u;
+    s *= 2654435769u;
+    s ^= s >> 16;
+    s *= 2654435769u;
+    s ^= s >> 16;
+    s *= 2654435769u;
+    return s;
+}
+
+float Random (uint seed)
+{
+    return float(Hash(seed)) / 4294967295.0; // 2^32-1
+}
+
+bool hasLength (float4 Vec, float l = 0) { return length(Vec) > l; }
+
+// float4 subPixelLookup (float2 uv, RWTexture2D<float4> tex)
+// {
+//     float4 main = tex[uv.xy];
+
+//     float4 x = tex[uv.xy + int2(1,0)];
+//     float4 y = tex[uv.xy + int2(0,1)];
+
+//     float2 subPixel = uv - floor(uv);
+
+//     return main * (1-x) + subPixel.x * x + subPixel.y * y;
+// }
+
+[numthreads(8,8,1)]
+void Init (uint3 id : SV_DispatchThreadID) 
+{
+    Life[id.xy] = Random(id.x + id.y * M_WIDTH + now * M_WIDTH * M_HEIGHT) > 0.4;
+}
+
+[numthreads(8,8,1)]
+void LifeCycle (uint3 id : SV_DispatchThreadID)
+{
+    int sum = 0;
+    for(int x = -1; x <= 1; x++)
+        for(int y = -1; y <= 1; y++)
+            sum += hasLength(Intermediary[int2(id.x + x, id.y + y)]);
+
+    int state = hasLength(Intermediary[id.xy]);
+    int neighburs = sum - state;
+
+    Life[id.xy] = state ? (neighburs == 2 || neighburs == 2) : (neighburs == 3);
+}
+
+[numthreads(8,8,1)]
+void Render (uint3 id : SV_DispatchThreadID) 
+{
+    // TODO: sub-pixel translations
+    // Result[id.xy] = subPixelLookup(id.xy + displacement.xy,Life) * float4(1,0,1,1);
+
+    int2 pixelId = int2(abs(id.x + displacement.x + L_WIDTH) % L_WIDTH,abs(id.y + displacement.y + L_HEIGHT) % L_HEIGHT);
+
+    Result[id.xy] = Life[pixelId] + float4(0,0,0.5,1) * ((abs(pixelId.x) % L_WIDTH < 5)||(abs(pixelId.y) % L_HEIGHT < 5));
+}

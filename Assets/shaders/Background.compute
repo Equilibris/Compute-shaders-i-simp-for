@@ -1,0 +1,45 @@
+﻿#pragma kernel CSMain
+
+RWTexture2D<float4> Result;
+// RWTexture2D<int> hasWritten;
+
+float2 getUV(uint2 cords, uint width, uint height) {
+	float2 uv = float2((cords.xy + float2(0.5f, 0.5f)) / float2(width, height) * 2.0f - 1.0f);
+
+	return uv;
+}
+
+uint hash(uint s) {
+	s ^= 2747636419u;
+	s *= 2654435769u;
+	s ^= s >> 16;
+	s *= 2654435769u;
+	s ^= s >> 16;
+	s *= 2654435769u;
+	return s;
+}
+
+float Random(uint seed)
+{
+	return float(hash(seed)) / 4294967295.0; // 2^32-1
+}
+float RandomFromPixelId(uint2 cord, uint width) {
+	uint pixelId = cord.x + cord.y * width;
+	return Random(pixelId);
+}
+
+[numthreads(8, 8, 1)]
+void CSMain(uint3 id : SV_DispatchThreadID)
+{
+	uint width, height;
+	Result.GetDimensions(width, height);
+	float2 uv = getUV(id.xy, width, height);
+
+	// Result[id.xy] = float4(pow(uv.yyy,0.5), 1.0f);
+
+
+	float val = RandomFromPixelId(id.xy, width);
+
+	Result[id.xy] = float4(val, val, val, 1);
+
+}
