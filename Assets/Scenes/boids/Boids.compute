@@ -1,0 +1,35 @@
+﻿#pragma kernel Render
+
+RWTexture2D<float4> Result;
+
+struct Boid
+{
+    float2 position;
+    float angle;
+    float speed;
+};
+
+RWStructuredBuffer<Boid> Boids;
+uint length;
+
+uint WIDTH, HEIGHT;
+
+uint Hash (uint s)
+{
+    s ^= 2747636419u;
+    s *= 2654435769u;
+    s ^= s >> 16;
+    s *= 2654435769u;
+    s ^= s >> 16;
+    s *= 2654435769u;
+    return s;
+}
+
+// 2^32-1
+float Random (uint seed) { return float(Hash(seed)) / 4294967295.0; }
+
+[numthreads(8,8,1)]
+void Render (uint3 id : SV_DispatchThreadID)
+{
+    Result[id.xy] = Random(length(id - float2(WIDTH / 2, HEIGHT / 2)));
+}
