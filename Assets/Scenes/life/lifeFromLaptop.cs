@@ -96,8 +96,6 @@ public class lifeFromLaptop : BaseRenderer
 	}
 	public override void Render(RenderTexture destination)
 	{
-		InitRenderTexture();
-
 		int threadGroupsX = Mathf.CeilToInt(WIDTH / ThreadBlockSize.x);
 		int threadGroupsY = Mathf.CeilToInt(HEIGHT / ThreadBlockSize.y);
 
@@ -107,7 +105,7 @@ public class lifeFromLaptop : BaseRenderer
 
 		Graphics.Blit(Result, destination);
 	}
-	private void InitRenderTexture()
+	public override void InitRenderTexture()
 	{
 		if (createTexture(ref Life, (int)LifeDimentions.x, (int)LifeDimentions.y))
 		{
