@@ -11,16 +11,7 @@ uint WIDTH, HEIGHT;
 
 float2 points[length];
 
-float2 p2;
-float2 p3;
-float2 p4;
-float2 p5;
-float2 p6;
-float2 p7;
-float2 p8;
-float2 p9;
-float2 p10;
-float2 p11;
+float hueShift;
 
 float metaball (float2 center, float size, float2 pixelPossition, float mergeStrength = 0)
 {

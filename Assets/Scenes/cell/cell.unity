@@ -218,4 +218,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   MainShader: {fileID: 7200000, guid: 2281292e1959d2745814c4c1b123e8e6, type: 3}
-  scaleFactor: 1
+  scaleFactor: 0.5
