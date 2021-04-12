@@ -36,12 +36,15 @@
     <ImplicitlyExpandDesignTimeFacades>false</ImplicitlyExpandDesignTimeFacades>
   </PropertyGroup>
   <ItemGroup>
+     <Compile Include="Assets\Scenes\boids\Boids.cs" />
      <Compile Include="Assets\Scenes\cell\cell.cs" />
      <Compile Include="Assets\Scenes\life\lifeFromLaptop.cs" />
      <Compile Include="Assets\Scenes\life\old\Life.cs" />
      <Compile Include="Assets\Scenes\misc\scripts\BufferShader.cs" />
      <Compile Include="Assets\Scenes\misc\scripts\ComputeShaderRenderer.cs" />
+     <Compile Include="Assets\scripts\BaseRenderer.cs" />
      <None Include="Assets\Scenes\cell\cell.compute" />
+     <None Include="Assets\Scenes\boids\Boids.compute" />
      <None Include="Assets\Scenes\misc\shaders\RTX.compute" />
      <None Include="Assets\Scenes\misc\shaders\BufferTest.compute" />
      <None Include="Assets\Scenes\life\old\Life.compute" />

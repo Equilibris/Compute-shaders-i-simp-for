@@ -10,7 +10,7 @@ RWTexture2D<float4> Result;
 float2 displacement;
 float now;
 
-uint M_WIDTH, M_HEIGHT, // [M]AIN dimentions
+uint WIDTH, HEIGHT, // [M]AIN dimentions
      L_WIDTH, L_HEIGHT;
 
 uint Hash (uint s)
@@ -46,7 +46,7 @@ bool hasLength (float4 Vec, float l = 0) { return length(Vec) > l; }
 [numthreads(8,8,1)]
 void Init (uint3 id : SV_DispatchThreadID) 
 {
-    Life[id.xy] = Random(id.x + id.y * M_WIDTH + now * M_WIDTH * M_HEIGHT) > 0.4;
+    Life[id.xy] = Random(id.x + id.y * WIDTH + now * WIDTH * HEIGHT) > 0.4;
 }
 
 [numthreads(8,8,1)]

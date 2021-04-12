@@ -2,19 +2,14 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class lifeFromLaptop : MonoBehaviour
+public class lifeFromLaptop : BaseRenderer
 {
-	public ComputeShader MainShader;
-
 	private RenderTexture Intermediary;
-	private RenderTexture Result;
 	public RenderTexture Life;
 
 	private int KERNEL_ID_Init;
 	private int KERNEL_ID_Render;
 	private int KERNEL_ID_LifeCycle;
-
-	private int WIDTH, HEIGHT;
 
 	private Vector2 ThreadBlockSize = new Vector2(8, 8);
 	private Vector2 LifeDimentions = new Vector2(10000, 10000);
@@ -92,28 +87,14 @@ public class lifeFromLaptop : MonoBehaviour
 		displacement += acceleration * Time.deltaTime;
 		zoomFactor = Mathf.Clamp(zoomFactor + zoomAcceleration, 0.1f, 1f);
 	}
-
-	private void OnRenderImage(RenderTexture source, RenderTexture destination)
+	public override void SetShaderParams()
 	{
-		WIDTH = Screen.width;
-		HEIGHT = Screen.height;
-
-		SetShaderParams();
-		Render(destination);
-	}
-	private void SetShaderParams()
-	{
-		MainShader.SetInt("M_WIDTH", WIDTH);
-		MainShader.SetInt("M_HEIGHT", HEIGHT);
-
 		MainShader.SetInt("L_WIDTH", (int)LifeDimentions.x);
 		MainShader.SetInt("L_HEIGHT", (int)LifeDimentions.y);
 
-		MainShader.SetFloat("now", Time.time);
-
 		MainShader.SetVector("displacement", displacement);
 	}
-	private void Render(RenderTexture destination)
+	public override void Render(RenderTexture destination)
 	{
 		InitRenderTexture();
 
@@ -126,20 +107,6 @@ public class lifeFromLaptop : MonoBehaviour
 
 		Graphics.Blit(Result, destination);
 	}
-	private bool createTexture(ref RenderTexture tex, int width, int height)
-	{
-		if (tex == null || tex.width != width || tex.height != height)
-		{
-			if (tex != null)
-				tex.Release();
-			tex = new RenderTexture(width, height, 0, RenderTextureFormat.ARGBFloat, RenderTextureReadWrite.Linear);
-			tex.enableRandomWrite = true;
-			tex.Create();
-			return true;
-		}
-		return false;
-	}
-
 	private void InitRenderTexture()
 	{
 		if (createTexture(ref Life, (int)LifeDimentions.x, (int)LifeDimentions.y))
