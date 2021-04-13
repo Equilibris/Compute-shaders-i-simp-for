@@ -15,12 +15,15 @@ public class Boids : BaseRenderer
 
 	private Vector2 ThreadBlockSize = new Vector2(8, 8);
 	private float InitBlockLength = 64;
+	private int BOID_CYCLE_BLOCK_COUNT;
 
 	private void Awake()
 	{
 		KERNEL_ID_Render = MainShader.FindKernel("Render");
 		KERNEL_ID_Init = MainShader.FindKernel("Init");
 		KERNEL_ID_Update = MainShader.FindKernel("Update");
+
+		BOID_CYCLE_BLOCK_COUNT = Mathf.CeilToInt(count / InitBlockLength);
 
 		InitComputeBuffer();
 	}
@@ -31,7 +34,7 @@ public class Boids : BaseRenderer
 		SetShaderParams();
 
 		MainShader.SetBuffer(KERNEL_ID_Init, "Boids", mainBuffer);
-		MainShader.Dispatch(KERNEL_ID_Init, Mathf.CeilToInt(count / InitBlockLength), 1, 1);
+		MainShader.Dispatch(KERNEL_ID_Init, BOID_CYCLE_BLOCK_COUNT, 1, 1);
 	}
 
 	private void OnDestroy()
@@ -42,9 +45,16 @@ public class Boids : BaseRenderer
 	public override void SetShaderParams()
 	{
 		MainShader.SetInt("count", count);
+		MainShader.SetBuffer(KERNEL_ID_Init, "Boids", mainBuffer);
+	}
+	private void updateBoids()
+	{
+		MainShader.Dispatch(KERNEL_ID_Update, BOID_CYCLE_BLOCK_COUNT, 1, 1);
 	}
 	public override void Render(RenderTexture destination)
 	{
+		updateBoids();
+
 		int threadGroupsX = Mathf.CeilToInt(WIDTH / ThreadBlockSize.x);
 		int threadGroupsY = Mathf.CeilToInt(HEIGHT / ThreadBlockSize.y);
 
