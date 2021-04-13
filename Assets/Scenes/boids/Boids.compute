@@ -1,6 +1,10 @@
-﻿#pragma kernel Render
+﻿#pragma kernel Update
+#pragma kernel Render
+#pragma kernel Init
 
 RWTexture2D<float4> Result;
+
+uint WIDTH, HEIGHT, now;
 
 struct Boid
 {
@@ -8,11 +12,18 @@ struct Boid
     float angle;
     float speed;
 };
+Boid makeBoid (float2 position, float angle, float speed)
+{
+    Boid boid;
+    boid.position = position;
+    boid.angle = angle;
+    boid.speed = speed;
+
+    return boid;
+}
 
 RWStructuredBuffer<Boid> Boids;
-uint length;
-
-uint WIDTH, HEIGHT;
+uint count;
 
 uint Hash (uint s)
 {
@@ -27,6 +38,18 @@ uint Hash (uint s)
 
 // 2^32-1
 float Random (uint seed) { return float(Hash(seed)) / 4294967295.0; }
+
+[numthreads(64,1,1)]
+void Init (uint3 id : SV_DispatchThreadID)
+{
+    Boids[id.x] = makeBoid(float2(Random(now + id.x),Random(now + id.x + count)),Random(now + id.x + 2*count),Random(now + id.x + 3*count));
+}
+
+[numthreads(64,1,1)]
+void Update (uint3 id : SV_DispatchThreadID)
+{
+
+}
 
 [numthreads(8,8,1)]
 void Render (uint3 id : SV_DispatchThreadID)
