@@ -15,7 +15,7 @@ public class cell : BaseRenderer
 
 	public override void SetShaderParams()
 	{
-		var useTime = Time.time / 10;
+		var useTime = Time.time / 15;
 
 		var points = new Vector4[60];
 

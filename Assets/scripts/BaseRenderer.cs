@@ -19,6 +19,7 @@ public abstract class BaseRenderer : MonoBehaviour
 		MainShader.SetInt("WIDTH", WIDTH);
 		MainShader.SetInt("HEIGHT", HEIGHT);
 		MainShader.SetFloat("now", Time.time);
+		MainShader.SetFloat("deltaTime", Time.deltaTime);
 
 		SetShaderParams();
 		InitRenderTexture();
