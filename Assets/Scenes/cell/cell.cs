@@ -16,8 +16,9 @@ public class cell : BaseRenderer
 	public override void SetShaderParams()
 	{
 		var useTime = Time.time / 15;
+		// var useTime = Mathf.Sin(Time.time * Mathf.PI / 15);
 
-		var points = new Vector4[60];
+		var points = new Vector4[120];
 
 		for (int i = 0; i < points.Length; i++)
 			points[i] =

@@ -13,20 +13,34 @@ struct Boid
 {
 	float2 position;
 	float angle;
-	float speed;
+	float3 colour;
 };
-Boid makeBoid(float2 position, float angle, float speed)
+Boid makeBoid(float2 position, float angle, float3 colour = 1)
 {
 	Boid boid;
 	boid.position = position;
 	boid.angle = angle;
-	boid.speed = speed;
+	boid.colour = colour;
 
 	return boid;
 }
 
 RWStructuredBuffer<Boid> Boids;
 uint count;
+
+float3 hsvToRgb (float hue, float saturation, float value)
+{
+	float chroma = saturation * value;
+	float huePrime = (hue % 360)/60;
+	float x = chroma * (1 - abs((huePrime % 2) - 1));
+
+	if(0 <= huePrime && huePrime <= 1) return float3(chroma, x, 0);
+	if(1 <  huePrime && huePrime <= 2) return float3(x, chroma, 0);
+	if(2 <  huePrime && huePrime <= 3) return float3(0, chroma, x);
+	if(3 <  huePrime && huePrime <= 4) return float3(0, x, chroma);
+	if(4 <  huePrime && huePrime <= 5) return float3(x, 0, chroma);
+	else                               return float3(chroma, 0, x);
+}
 
 uint Hash(uint s)
 {
@@ -47,9 +61,11 @@ float2 unitCircle(float angle) { return float2(cos(angle), sin(angle)); }
 [numthreads(BoidThreadBlockX, 1, 1)]
 void Init(uint3 id : SV_DispatchThreadID)
 {
+	float cond = Random(now + id.x + 3 * count);
+
 	Boids[id.x] = makeBoid(
 		float2(Random(now + id.x) * WIDTH, Random(now + id.x + count) * HEIGHT),
-		Random(now + id.x + 2 * count) * 2 * Pi, (Random(now + id.x + 3 * count) / 2 + 0.05));
+		Random(now + id.x + 2 * count) * 2 * Pi, (cond < 0.3) * float3(0,1,1) +  (0.3 < cond && cond < 0.6) * float3(1,0,1) + (0.6 < cond) * float3(1,1,0) );
 }
 
 [numthreads(BoidThreadBlockX, 1, 1)]
@@ -59,7 +75,7 @@ void Update(uint3 id : SV_DispatchThreadID)
 
 	Boid this = Boids[id.x];
 
-	Result[this.position] = 1;
+	Result[this.position] = float4(this.colour.xyz, 1);
 
 	float distanceLerpedAngle = this.angle;
 
@@ -68,14 +84,16 @@ void Update(uint3 id : SV_DispatchThreadID)
 	for (uint i = 0; i < count - 1; i++) {
 		Boid current = Boids[i + (i >= id.x)];
         float d = distance(this.position, current.position);
-		distanceLerpedAngle = lerp(this.angle, current.angle, 1 / (2 * d));
-        targetLocation = lerp(this.angle, current.angle, 1/(2*d));
+		if(d > 0){
+			distanceLerpedAngle = lerp(this.angle, current.angle, 1 / (d*5));
+			targetLocation = lerp(targetLocation, current.position, 1 / (abs(20 - d)));
+		}
 	}
 
 	this.angle = distanceLerpedAngle + 0.1 * (Random(this.position.x + this.position.y * WIDTH + now * HEIGHT * WIDTH) - 0.5);
 
-	float2 newPos = this.position + unitCircle(this.angle) * this.speed / 2 + float2(WIDTH, HEIGHT);
-	this.position = newPos.xy % int2(WIDTH, HEIGHT);
+	float2 newPos = lerp(this.position, targetLocation,0.005) + unitCircle(this.angle) / 2 + float2(WIDTH, HEIGHT);
+	this.position = newPos % int2(WIDTH, HEIGHT);
 
 	Boids[id.x] = this;
 }
@@ -89,6 +107,6 @@ void Render(uint3 id : SV_DispatchThreadID)
 		for (int y = -1; y <= 1; y++)
 			sum += Result[(id.xy + int2(x, y)) % int2(WIDTH, HEIGHT)];
 
-	Result[id.xy] = Result[id.xy] - 0.01;
+	Result[id.xy] = Result[id.xy] - 0.015;
 	// Result[id.xy] = clamp(sum / 9 - 0.001,0,1);
 }

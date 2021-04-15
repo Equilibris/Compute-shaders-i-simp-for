@@ -1,7 +1,7 @@
 ﻿// Each #kernel tells which function to compile; you can have many kernels
 #pragma kernel Render
 
-#define length 60
+#define length 120
 
 // Create a RenderTexture with enableRandomWrite flag and set it
 // with cs.SetTexture

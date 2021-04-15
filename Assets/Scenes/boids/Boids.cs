@@ -11,7 +11,7 @@ public class Boids : BaseRenderer
 	private int KERNEL_ID_Render;
 
 	private int count = 10000;
-	private int stride = 4 * 4;
+	private int stride = 24;
 
 	private Vector2 ThreadBlockSize = new Vector2(8, 8);
 	private float InitBlockLength = 64;
@@ -46,7 +46,6 @@ public class Boids : BaseRenderer
 	public override void SetShaderParams()
 	{
 		MainShader.SetInt("count", count);
-		MainShader.SetBuffer(KERNEL_ID_Init, "Boids", mainBuffer);
 	}
 
 	public override void Render(RenderTexture destination)
