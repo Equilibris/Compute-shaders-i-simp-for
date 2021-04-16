@@ -10,7 +10,7 @@ public class Boids : BaseRenderer
 	private int KERNEL_ID_Update;
 	private int KERNEL_ID_Render;
 
-	private int count = 10000;
+	private int count = 1000;
 	private int stride = 24;
 
 	private Vector2 ThreadBlockSize = new Vector2(8, 8);

@@ -1,14 +1,98 @@
-﻿// Each #kernel tells which function to compile; you can have many kernels
-#pragma kernel CSMain
+﻿#pragma kernel Update
+#pragma kernel Render
+#pragma kernel Init
 
-// Create a RenderTexture with enableRandomWrite flag and set it
-// with cs.SetTexture
+#define Pi 3.1415
+#define BoidThreadBlockX 64
+
 RWTexture2D<float4> Result;
 
-[numthreads(8,8,1)]
-void CSMain (uint3 id : SV_DispatchThreadID)
-{
-    // TODO: insert actual code here!
+uint WIDTH, HEIGHT, now, deltaTime;
 
-    Result[id.xy] = float4(id.x & id.y, (id.x & 15)/15.0, (id.y & 15)/15.0, 0.0);
+struct Agent
+{
+	float2 position;
+	float angle;
+};
+Agent makeAgent(float2 position, float angle)
+{
+	Agent agent;
+	agent.position = position;
+	agent.angle = angle;
+
+	return agent;
+}
+
+RWStructuredBuffer<Agent> Agents;
+uint count;
+
+bool inBounds(float2 point) 
+{
+	return point.x >= 0 && point.y >= 0 && point.x < WIDTH && point.y < HEIGHT;
+}
+
+float3 hsvToRgb (float hue, float saturation, float value)
+{
+	float chroma = saturation * value;
+	float huePrime = (hue % 360)/60;
+	float x = chroma * (1 - abs((huePrime % 2) - 1));
+
+	if(0 <= huePrime && huePrime <= 1) return float3(chroma, x, 0);
+	if(1 <  huePrime && huePrime <= 2) return float3(x, chroma, 0);
+	if(2 <  huePrime && huePrime <= 3) return float3(0, chroma, x);
+	if(3 <  huePrime && huePrime <= 4) return float3(0, x, chroma);
+	if(4 <  huePrime && huePrime <= 5) return float3(x, 0, chroma);
+	else                               return float3(chroma, 0, x);
+}
+
+uint Hash(uint s)
+{
+	s ^= 2747636419u;
+	s *= 2654435769u;
+	s ^= s >> 16;
+	s *= 2654435769u;
+	s ^= s >> 16;
+	s *= 2654435769u;
+	return s;
+}
+
+// 2^32-1
+float Random(uint seed) { return float(Hash(seed)) / 4294967295.0; }
+
+float2 unitCircle(float angle) { return float2(cos(angle), sin(angle)); }
+
+[numthreads(BoidThreadBlockX, 1, 1)]
+void Init(uint3 id : SV_DispatchThreadID)
+{
+	Agents[id.x] = makeAgent(
+		float2(Random(now + id.x) * WIDTH, Random(now + id.x + count) * HEIGHT),
+		Random(now + id.x + 2 * count) * 2 * Pi);
+}
+
+[numthreads(BoidThreadBlockX, 1, 1)]
+void Update(uint3 id : SV_DispatchThreadID)
+{
+	if (id.x >= count) return;
+
+	Agent this = Agents[id.x];
+
+	// this.angle += Random(this.position)
+
+	this.position += unitCircle(this.angle);
+
+    Result[this.position] = 1;
+
+	Agents[id.x] = this;
+}
+
+[numthreads(8, 8, 1)]
+void Render(uint3 id : SV_DispatchThreadID)
+{
+	float4 sum;
+
+	for (int x = -1; x <= 1; x++)
+		for (int y = -1; y <= 1; y++)
+			sum += Result[(id.xy + int2(x, y)) % int2(WIDTH, HEIGHT)];
+
+	Result[id.xy] = clamp(sum / 9 - 0.001,0,1);
 }
