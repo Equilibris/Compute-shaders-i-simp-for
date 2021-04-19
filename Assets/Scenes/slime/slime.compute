@@ -7,7 +7,9 @@
 
 RWTexture2D<float4> Result;
 
-uint WIDTH, HEIGHT, now, deltaTime;
+uint WIDTH, HEIGHT;
+
+float deltaTime, now;
 
 struct Agent
 {
@@ -26,9 +28,9 @@ Agent makeAgent(float2 position, float angle)
 RWStructuredBuffer<Agent> Agents;
 uint count;
 
-bool inBounds(float2 point) 
+bool inBounds (float2 targetPoint)
 {
-	return point.x >= 0 && point.y >= 0 && point.x < WIDTH && point.y < HEIGHT;
+	return targetPoint.x >= 0 && targetPoint.y >= 0 && targetPoint.x < WIDTH && targetPoint.y < HEIGHT;
 }
 
 float3 hsvToRgb (float hue, float saturation, float value)
@@ -78,9 +80,20 @@ void Update(uint3 id : SV_DispatchThreadID)
 
 	// this.angle += Random(this.position)
 
-	this.position += unitCircle(this.angle);
+	float newAngle = this.angle + (Random(this.position.x + this.position.y * WIDTH + now * WIDTH * HEIGHT) - 0.5) / 2;
 
-    Result[this.position] = 1;
+	float2 newpos = this.position + unitCircle(this.angle) * deltaTime * 100;
+
+	if(!inBounds(newpos))
+	{
+		newAngle = Random(id.x + now * HEIGHT * WIDTH) * 2 * Pi;
+		newpos = float2(clamp(newpos.x,0,WIDTH - 0.01),clamp(newpos.y, 0, HEIGHT - 0.01));
+	}
+
+	Result[this.position] = 1;
+
+	this.angle = newAngle;
+	this.position = newpos;
 
 	Agents[id.x] = this;
 }
@@ -94,5 +107,6 @@ void Render(uint3 id : SV_DispatchThreadID)
 		for (int y = -1; y <= 1; y++)
 			sum += Result[(id.xy + int2(x, y)) % int2(WIDTH, HEIGHT)];
 
-	Result[id.xy] = clamp(sum / 9 - 0.001,0,1);
+	// Result[id.xy] = clamp(sum / 9 - 0.005,0,1);
+	Result[id.xy] = max(Result[id.xy] - 0.01,0);
 }

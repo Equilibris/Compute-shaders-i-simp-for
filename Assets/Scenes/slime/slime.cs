@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -8,7 +8,7 @@ public class slime : BaseRenderer
 	private int KERNEL_ID_Init;
 	private int KERNEL_ID_Update;
 
-	private int count = 10000;
+	private int count = 40000;
 	private int InitBlockLength = 64;
 
 	private int stride = 24;
@@ -26,9 +26,12 @@ public class slime : BaseRenderer
 		KERNEL_ID_Update = MainShader.FindKernel("Update");
 
 		SLIME_BLOCK_COUNT = Mathf.CeilToInt(count / InitBlockLength);
+	}
 
+	private void Start() {
 		InitComputeBuffer();
 	}
+
 	private void InitComputeBuffer()
 	{
 		mainBuffer = new ComputeBuffer(count, stride);
