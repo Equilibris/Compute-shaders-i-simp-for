@@ -1,0 +1,55 @@
+﻿// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel Render
+
+#define length 120
+
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+RWTexture2D<float4> Result;
+
+uint WIDTH, HEIGHT;
+
+float2 points[length];
+
+float hueShift;
+
+float metaball(float2 center, float size, float2 pixelPossition, float mergeStrength = 0)
+{
+	return max((size + size * mergeStrength) / distance(center, pixelPossition) - mergeStrength, 0);
+}
+
+float4 additiveCMYColours(float c, float m, float y)
+{
+	return pow(c, 5) * float4(0, 1, 1, 1) + pow(m, 10) * float4(1, 0, 1, 1) + pow(y, 15) * float4(1, 1, 0, 1) + 0.05;
+}
+
+[numthreads(8, 8, 1)]
+void Render(uint3 id : SV_DispatchThreadID)
+{
+	float2 p1 = float2(WIDTH / 2, HEIGHT / 2);
+
+	float2 pixelPossition = float2(id.xy);
+
+	float smallSize = 1;
+	float v = 1;
+
+	float main = metaball(p1, 100, pixelPossition);
+
+	float c = main, m = main, y = main;
+
+	for (uint i1 = 0; i1 < length; i1 += 3)
+	{
+		uint i2 = i1 + 1, i3 = i2 + 1;
+		c += metaball(points[i1], smallSize + 20 / (i1 / 3 + 1), pixelPossition);
+		m += metaball(points[i2], smallSize + 20 / (i2 / 3 + 1), pixelPossition);
+		y += metaball(points[i3], smallSize + 20 / (i3 / 3 + 1), pixelPossition);
+	}
+
+    float4 trailSum = 0;
+
+    for(int X = -1; X <= 1; X++)
+        for(int Y = -1; Y <= 1; Y++)
+            trailSum += Result[id.xy + int2(X,Y)];
+
+	Result[id.xy] = min(1,additiveCMYColours(c, m, y) + max((trailSum / 10 - 0.1),0));
+}

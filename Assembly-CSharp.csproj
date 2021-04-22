@@ -45,6 +45,7 @@
      <Compile Include="Assets\Scenes\slime\slime.cs" />
      <Compile Include="Assets\scripts\BaseRenderer.cs" />
      <None Include="Assets\Scenes\cell\cell.compute" />
+     <None Include="Assets\Scenes\cell\cellWithTrail.compute" />
      <None Include="Assets\Scenes\slime\slime.compute" />
      <None Include="Assets\Scenes\boids\Boids.compute" />
      <None Include="Assets\Scenes\misc\shaders\RTX.compute" />
