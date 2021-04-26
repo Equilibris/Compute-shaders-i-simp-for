@@ -8,7 +8,7 @@ public class slime : BaseRenderer
 	private int KERNEL_ID_Init;
 	private int KERNEL_ID_Update;
 
-	private int count = 40000;
+	public int count = 14;
 	private int InitBlockLength = 64;
 
 	private int stride = 24;

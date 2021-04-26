@@ -42,6 +42,7 @@
      <Compile Include="Assets\Scenes\life\old\Life.cs" />
      <Compile Include="Assets\Scenes\misc\scripts\BufferShader.cs" />
      <Compile Include="Assets\Scenes\misc\scripts\ComputeShaderRenderer.cs" />
+     <Compile Include="Assets\Scenes\ray-traceing\RTX.cs" />
      <Compile Include="Assets\Scenes\slime\slime.cs" />
      <Compile Include="Assets\scripts\BaseRenderer.cs" />
      <None Include="Assets\Scenes\cell\cell.compute" />
@@ -54,6 +55,7 @@
      <None Include="Assets\Scenes\misc\shaders\Rule30.compute" />
      <None Include="Assets\Scenes\misc\shaders\Background.compute" />
      <None Include="Assets\Scenes\life\LifeFromLaptop.compute" />
+     <None Include="Assets\Scenes\ray-traceing\RTX.compute" />
     <Reference Include="UnityEngine">
         <HintPath>C:/Program Files/Unity/Hub/Editor/2019.4.18f1/Editor/Data/Managed/UnityEngine/UnityEngine.dll</HintPath>
     </Reference>

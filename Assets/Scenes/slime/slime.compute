@@ -15,12 +15,14 @@ struct Agent
 {
 	float2 position;
 	float angle;
+	float3 col;
 };
-Agent makeAgent(float2 position, float angle)
+Agent makeAgent(float2 position, float angle, float3 col)
 {
 	Agent agent;
 	agent.position = position;
 	agent.angle = angle;
+	agent.col = col;
 
 	return agent;
 }
@@ -66,9 +68,10 @@ float2 unitCircle(float angle) { return float2(cos(angle), sin(angle)); }
 [numthreads(BoidThreadBlockX, 1, 1)]
 void Init(uint3 id : SV_DispatchThreadID)
 {
+	float randVal = Random(now + id.x + 3 * count);
 	Agents[id.x] = makeAgent(
 		float2(Random(now + id.x) * WIDTH, Random(now + id.x + count) * HEIGHT),
-		Random(now + id.x + 2 * count) * 2 * Pi);
+		Random(now + id.x + 2 * count) * 2 * Pi, (randVal > 0.5) * float3(1,0,1) + (randVal <= 0.5) * float3(0,1,1));
 }
 
 [numthreads(BoidThreadBlockX, 1, 1)]
@@ -90,7 +93,7 @@ void Update(uint3 id : SV_DispatchThreadID)
 		newpos = float2(clamp(newpos.x,0,WIDTH - 0.01),clamp(newpos.y, 0, HEIGHT - 0.01));
 	}
 
-	Result[this.position] = 1;
+	Result[this.position] = float4(this.col.xyz,1);
 
 	this.angle = newAngle;
 	this.position = newpos;
