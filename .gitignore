@@ -69,3 +69,18 @@ crashlytics-build.properties
 # Temporary auto-generated Android Assets
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/*
+Assets/Scenes/ray-traceing/RTX.cs
+Assets/ShaderlabVSCode/Documents.meta
+Assets/ShaderlabVSCode/Editor.meta
+Assets/ShaderlabVSCode/VSCodePlugin.meta
+Assets/ShaderlabVSCode/Documents/Manual.html
+Assets/ShaderlabVSCode/Documents/Manual.html.meta
+Assets/ShaderlabVSCode/Documents/Manual.pdf
+Assets/ShaderlabVSCode/Documents/Manual.pdf.meta
+Assets/ShaderlabVSCode/Editor/ShaderlabVSCodeEditor.cs
+Assets/ShaderlabVSCode/Editor/ShaderlabVSCodeEditor.cs.meta
+Assets/ShaderlabVSCode/Editor/VSCodeBridge.cs
+Assets/ShaderlabVSCode/Editor/VSCodeBridge.cs.meta
+Assets/ShaderlabVSCode/VSCodePlugin/shaderlabvscode-1.2.8.vsix
+Assets/ShaderlabVSCode/VSCodePlugin/shaderlabvscode-1.2.8.vsix.meta
+Assets/ShaderlabVSCode.meta
